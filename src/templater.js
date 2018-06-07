@@ -3,7 +3,7 @@
   $.fn.templater = function(options) {
 
     const self = this;
-
+    const tagsContainer = self[0];
     const opts = $.extend( {}, $.fn.templater.defaults, options );
     const tags = [];
     const templates = [];
@@ -19,7 +19,13 @@
 
     function render() {
       tags.forEach((tag, i) => {
-        const domTags = [...self[0].querySelectorAll(tag)];
+        const domTags = [...tagsContainer.querySelectorAll(tag)];
+        let length = domTags.length;
+
+        if ( !length ) {
+          return;
+        }
+
         let template = templates[i];
         const matches = findMatches(template);
 
@@ -34,7 +40,10 @@
           });
 
           tag.outerHTML = template;
+          length--;
         });
+
+        return render();
       });
     }
 
@@ -56,6 +65,5 @@
 
     return this;
   };
-
 
 })(jQuery);
