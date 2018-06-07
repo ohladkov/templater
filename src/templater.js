@@ -1,9 +1,18 @@
 const Templater = {
+  tags: [],
+  templates: [],
+  addTag(tag, template) {
+    this.tags.push(tag);
+    this.templates.push(template);
+  },
   run() {
-    const tags = Array.from(document.querySelectorAll('bootstrap_button'));
-    const transformedTagHtml = '<button class="btn btn-default" type="submit">Some Text</button>'
-    tags.forEach((el) => {
-      el.outerHTML = transformedTagHtml;
+    this.tags.forEach((tag, i) => {
+      const domTag = [...document.querySelectorAll(tag)];
+      const template = this.templates[i];
+
+      domTag.forEach((el) => {
+        el.outerHTML = template;
+      })
     })
   }
 }
