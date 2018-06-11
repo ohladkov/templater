@@ -1,57 +1,65 @@
 (function ($) {
 
-  $.fn.templater = function (options) {
+  function run(obj, container) {
+    for (const key in obj) {
+      const domTags = [...container.querySelectorAll(key)];
 
-    const tagsContainer = this[0];
-    const opts = $.extend({}, $.fn.templater.defaults, options);
+      if (domTags.length < 1) {
+        return;
+      }
 
-    const tags = Object.keys(opts.tags);
-    const templates = Object.values(opts.tags);
+      const matches = findMatches(obj[key]);
 
-    function render() {
-      tags.forEach((tag, i) => {
-        const domTags = [...tagsContainer.querySelectorAll(tag)];
-        let length = domTags.length;
-
-        if (length < 1) {
-          return;
-        }
-
-        let template = templates[i];
-        const matches = findMatches(template);
-
-        domTags.forEach((tag) => {
-          matches.forEach((match) => {
-            const attr = match.slice(2, match.length - 2);
-            if (attr === 'html') {
-              template = template.replace(match, tag.innerHTML);
-            }
-            template = template.replace(match, tag.getAttribute(attr));
-            return template;
-          });
-
-          tag.outerHTML = template;
-          length--;
-        });
-
-        return render();
+      domTags.forEach((tag) => {
+        render(tag, obj[key], matches);
       });
     }
 
-    function findMatches(str) {
-      const re = /({{.+?}})/gm;
-      const matchArr = [];
-      let curMatch;
+    return run(obj, container);
+  }
 
-      while (curMatch = re.exec(str)) {
-        matchArr.push(curMatch[1]);
+  function render(tag, template, matches) {
+    matches.forEach((match) => {
+      for (const key in match) {
+        if (match[key] === 'html') {
+          template = template.replace(key, tag.innerHTML);
+        }
+        template = template.replace(key, tag.getAttribute(match[key]));
       }
 
-      return matchArr;
+      return template;
+    });
+
+    tag.outerHTML = template;
+  }
+
+  function findMatches(str) {
+    const substrToFind = /{{(.+?)}}/gm;
+    const matchArr = [];
+    let match = {};
+    let curMatch;
+
+    while (curMatch = substrToFind.exec(str)) {
+      match[curMatch[0]] = curMatch[1];
+
+      matchArr.push(match);
+    }
+
+    return matchArr;
+  }
+
+
+  $.fn.templater = function (options) {
+    const tagsContainer = this[0];
+    const opts = $.extend({}, $.fn.templater.defaults, options);
+    const tags = {};
+
+    for (const key in opts.tags) {
+      tags[key] = opts.tags[key];
     }
 
     this.each(function () {
-      render();
+      run(tags, tagsContainer);
     });
 
     return this;
