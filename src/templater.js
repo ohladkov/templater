@@ -1,24 +1,31 @@
-(function ($) {
+class Templater {
 
-  function run(obj, container) {
+  constructor(obj, container) {
+    this.tags = obj.tags;
+    this.container = container;
+
+    return this.run(this.tags, this.container);
+  }
+
+  run(obj) {
     for (const key in obj) {
-      const domTags = [...container.querySelectorAll(key)];
+      const domTags = this.container.querySelectorAll(key);
 
       if (domTags.length < 1) {
         return;
       }
 
-      const matches = findMatches(obj[key]);
+      const matches = this.findMatches(obj[key]);
 
       domTags.forEach((tag) => {
-        render(tag, obj[key], matches);
+        this.render(tag, obj[key], matches);
       });
     }
 
-    return run(obj, container);
+    return this.run(obj);
   }
 
-  function render(tag, template, matches) {
+  render(tag, template, matches) {
     matches.forEach((match) => {
       for (const key in match) {
         if (match[key] === 'html') {
@@ -33,10 +40,10 @@
     tag.outerHTML = template;
   }
 
-  function findMatches(str) {
+  findMatches(str) {
     const substrToFind = /{{(.+?)}}/gm;
     const matchArr = [];
-    let match = {};
+    const match = {};
     let curMatch;
 
     while (curMatch = substrToFind.exec(str)) {
@@ -47,22 +54,6 @@
 
     return matchArr;
   }
+}
 
-
-  $.fn.templater = function (options) {
-    const tagsContainer = this[0];
-    const opts = $.extend({}, $.fn.templater.defaults, options);
-    const tags = {};
-
-    for (const key in opts.tags) {
-      tags[key] = opts.tags[key];
-    }
-
-    this.each(function () {
-      run(tags, tagsContainer);
-    });
-
-    return this;
-  };
-
-})(jQuery);
+module.exports = Templater;

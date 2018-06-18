@@ -1,0 +1,1 @@
+run `gulp build` task to create dist.html file without custom tags
